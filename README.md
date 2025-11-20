@@ -30,6 +30,7 @@ Esto levanta los servicios:
 - `inventory_db` → PostgreSQL 15  
 - Network y volúmenes persistentes  
 
+![Contenedores](https://raw.githubusercontent.com/xavier-null-data/da-inventory-api-v1/master/docs/contenedores.png)
 ---
 
 ## Inicialización automática mediante `entrypoint.sh`
@@ -74,15 +75,9 @@ Archivo:
 openapi.yaml
 ```
 
-Abrir en Swagger Editor:
+Puedes revisar la documentación en http://localhost:8080/docs una vez que la app este desplegada
 
-https://editor.swagger.io/
-
-Para incrustar una imagen relacionada a Swagger en este README:
-
-```md
-![Swagger Preview](./docs/swagger-preview.png)
-```
+![Swagger](https://raw.githubusercontent.com/xavier-null-data/da-inventory-api-v1/master/docs/swagger-preview.png)
 
 ---
 
@@ -182,17 +177,8 @@ Permite reemplazar comportamientos sin modificar la capa de servicio.
 
 ---
 
-# Diagramas de arquitectura
-
-Los diagramas se encuentran en la carpeta:
-
-```
-/architecture/
-    high-level-diagram.png
-    modules-diagram.png
-    database-schema.png
-```
-
+# Diagrama de arquitectura
+![Diagrama Arq](https://raw.githubusercontent.com/xavier-null-data/da-inventory-api-v1/master/docs/arquitectura.png)
 ---
 
 # Backups y restauración de base de datos
