@@ -1,0 +1,384 @@
+openapi: 3.0.3
+info:
+  title: Inventory API
+  version: 1.0.0
+  description: REST API for managing products, inventory, stores, and transfers.
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+
+tags:
+  - name: Products
+    description: Product catalog management
+  - name: Inventory
+    description: Inventory and stock per store
+  - name: Transfers
+    description: Product movement and transfers
+
+paths:
+
+  ###############################################
+  # PRODUCT LIST
+  ###############################################
+  /api/products:
+    get:
+      tags: [Products]
+      summary: List products
+      parameters:
+        - in: query
+          name: category
+          schema: { type: string }
+        - in: query
+          name: min_price
+          schema: { type: number }
+        - in: query
+          name: max_price
+          schema: { type: number }
+        - in: query
+          name: in_stock
+          schema:
+            type: boolean
+            example: true
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: per_page
+          schema: { type: integer, default: 10 }
+      responses:
+        '200':
+          description: Product list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponseList'
+              example:
+                success: true
+                message: "Product list retrieved successfully"
+                data:
+                  items:
+                    - id: "b3f1f3a0-3d93-4b98-bc9a-c5c19dcb30e9"
+                      name: Steel Rod
+                      category: steel
+                      price: 120.50
+                      sku: STL-ROD-001
+                  pagination:
+                    total: 20
+                    page: 1
+                    per_page: 10
+                    total_pages: 2
+
+    post:
+      tags: [Products]
+      summary: Create new product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductCreateRequest'
+      responses:
+        '201':
+          description: Product created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponseOne'
+
+
+  ###############################################
+  # GET / UPDATE / DELETE PRODUCT (UUID)
+  ###############################################
+  /api/products/{id}:
+    get:
+      tags: [Products]
+      summary: Get product detail
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Product detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponseOne'
+        '404':
+          description: Product not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      tags: [Products]
+      summary: Update product
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductUpdateRequest'
+      responses:
+        '200':
+          description: Product updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponseOne'
+
+    delete:
+      tags: [Products]
+      summary: Delete product
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Product deleted successfully
+
+
+  ###############################################
+  # INVENTORY PER STORE (UUID)
+  ###############################################
+  /api/stores/{id}/inventory:
+    get:
+      tags: [Inventory]
+      summary: List inventory by store
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Inventory list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponseList'
+
+
+  ###############################################
+  # INVENTORY TRANSFER (UUID)
+  ###############################################
+  /api/inventory/transfer:
+    post:
+      tags: [Transfers]
+      summary: Transfer inventory between stores
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+      responses:
+        '201':
+          description: Transfer completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponseOne'
+        '422':
+          description: Not enough stock
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
+  ###############################################
+  # LOW STOCK ALERTS
+  ###############################################
+  /api/inventory/alerts:
+    get:
+      tags: [Inventory]
+      summary: List low stock alerts
+      responses:
+        '200':
+          description: Low stock list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StandardResponseList'
+
+
+###############################################
+# COMPONENTS / SCHEMAS
+###############################################
+components:
+
+  schemas:
+
+    ###################################################
+    # STANDARD LIST RESPONSE (items + pagination)
+    ###################################################
+    StandardResponseList:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        data:
+          type: object
+          properties:
+            items:
+              type: array
+              items:
+                oneOf:
+                  - $ref: '#/components/schemas/Product'
+                  - $ref: '#/components/schemas/Inventory'
+                  - $ref: '#/components/schemas/Movement'
+            pagination:
+              type: object
+              properties:
+                total: { type: integer }
+                page: { type: integer }
+                per_page: { type: integer }
+                total_pages: { type: integer }
+
+    ###################################################
+    # STANDARD SINGLE RESPONSE (one resource)
+    ###################################################
+    StandardResponseOne:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        data:
+          type: object
+
+    ###################################################
+    # ERROR RESPONSE
+    ###################################################
+    ErrorResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Resource not found"
+        errors:
+          type: object
+          nullable: true
+
+
+    ###################################################
+    # PRODUCT SCHEMA
+    ###################################################
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name: { type: string }
+        description: { type: string }
+        category: { type: string }
+        price: { type: number }
+        sku: { type: string }
+
+    ###################################################
+    # INVENTORY SCHEMA
+    ###################################################
+    Inventory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        productId:
+          type: string
+          format: uuid
+        storeId:
+          type: string
+          format: uuid
+        quantity: { type: integer }
+        minStock: { type: integer }
+
+    ###################################################
+    # MOVEMENT SCHEMA
+    ###################################################
+    Movement:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        productId:
+          type: string
+          format: uuid
+        sourceStoreId:
+          type: string
+          format: uuid
+        targetStoreId:
+          type: string
+          format: uuid
+        quantity: { type: integer }
+        type:
+          type: string
+          enum: [IN, OUT, TRANSFER]
+        timestamp:
+          type: string
+          format: date-time
+
+    ###################################################
+    # PRODUCT REQUEST SCHEMAS
+    ###################################################
+    ProductCreateRequest:
+      type: object
+      required: [name, category, price, sku]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        category: { type: string }
+        price: { type: number }
+        sku: { type: string }
+
+    ProductUpdateRequest:
+      type: object
+      properties:
+        name: { type: string }
+        description: { type: string }
+        category: { type: string }
+        price: { type: number }
+        sku: { type: string }
+
+    ###################################################
+    # TRANSFER REQUEST (UUID)
+    ###################################################
+    TransferRequest:
+      type: object
+      required: [productId, sourceStoreId, targetStoreId, quantity]
+      properties:
+        productId:
+          type: string
+          format: uuid
+        sourceStoreId:
+          type: string
+          format: uuid
+        targetStoreId:
+          type: string
+          format: uuid
+        quantity:
+          type: integer
+          minimum: 1

@@ -1,0 +1,146 @@
+{
+    "info": {
+        "name": "De Acero - Inventory API Collection",
+        "_postman_id": "c2b84bd2-e3fb-4c2c-a147-bf7f638e4a82",
+        "description": "Colección de endpoints para la API de inventario",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+        {
+            "name": "List Products",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "{{base_url}}/api/products",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "products"]
+                }
+            }
+        },
+        {
+            "name": "Create Product",
+            "request": {
+                "method": "POST",
+                "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"name\": \"Concrete Block\",\n  \"description\": \"High density block\",\n  \"category\": \"construction\",\n  \"price\": 45.50,\n  \"sku\": \"CNST-BLK-001\"\n}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/api/products",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "products"]
+                }
+            }
+        },
+        {
+            "name": "Get Product by ID",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "{{base_url}}/api/products/{{productId}}",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "products", "{{productId}}"]
+                }
+            }
+        },
+        {
+            "name": "Update Product",
+            "request": {
+                "method": "PUT",
+                "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"name\": \"Updated Steel Rod\",\n  \"description\": \"Stronger steel\",\n  \"category\": \"steel\",\n  \"price\": 150.75,\n  \"sku\": \"STL-ROD-UPDATED\"\n}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/api/products/{{productId}}",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "products", "{{productId}}"]
+                }
+            }
+        },
+        {
+            "name": "Delete Product",
+            "request": {
+                "method": "DELETE",
+                "url": {
+                    "raw": "{{base_url}}/api/products/{{productId}}",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "products", "{{productId}}"]
+                }
+            }
+        },
+        {
+            "name": "Inventory by Store",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "{{base_url}}/api/stores/{{storeId}}/inventory",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "stores", "{{storeId}}", "inventory"]
+                }
+            }
+        },
+        {
+            "name": "Transfer Inventory",
+            "request": {
+                "method": "POST",
+                "header": [
+                    { "key": "Content-Type", "value": "application/json" }
+                ],
+                "body": {
+                    "mode": "raw",
+                    "raw": "{\n  \"productId\": \"{{productId}}\",\n  \"sourceStoreId\": \"{{sourceStoreId}}\",\n  \"targetStoreId\": \"{{targetStoreId}}\",\n  \"quantity\": 10\n}"
+                },
+                "url": {
+                    "raw": "{{base_url}}/api/inventory/transfer",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "inventory", "transfer"]
+                }
+            }
+        },
+        {
+            "name": "Low Stock Alerts",
+            "request": {
+                "method": "GET",
+                "url": {
+                    "raw": "{{base_url}}/api/inventory/alerts",
+                    "host": ["{{base_url}}"],
+                    "path": ["api", "inventory", "alerts"]
+                }
+            }
+        }
+    ],
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:8080",
+            "type": "string"
+        },
+        {
+            "key": "productId",
+            "value": "00000000-0000-0000-0000-000000000000",
+            "type": "string"
+        },
+        {
+            "key": "storeId",
+            "value": "00000000-0000-0000-0000-000000000000",
+            "type": "string"
+        },
+        {
+            "key": "sourceStoreId",
+            "value": "00000000-0000-0000-0000-000000000000",
+            "type": "string"
+        },
+        {
+            "key": "targetStoreId",
+            "value": "00000000-0000-0000-0000-000000000000",
+            "type": "string"
+        }
+    ]
+}

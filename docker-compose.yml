@@ -1,0 +1,44 @@
+version: '3.9'
+
+services:
+    app:
+        build: .
+        container_name: inventory_app
+        restart: unless-stopped
+        ports:
+            - "8080:8000"
+        environment:
+            APP_ENV: local
+            APP_DEBUG: 'true'
+            APP_KEY: ""
+            DB_CONNECTION: pgsql
+            DB_HOST: db
+            DB_PORT: 5432
+            DB_DATABASE: inventory_db
+            DB_USERNAME: inventory_user
+            DB_PASSWORD: inventory_pass
+        depends_on:
+            db:
+                condition: service_healthy
+        command: ["sh", "scripts/init.sh"]
+
+    db:
+        image: postgres:15
+        container_name: inventory_db
+        restart: unless-stopped
+        environment:
+            POSTGRES_DB: inventory_db
+            POSTGRES_USER: inventory_user
+            POSTGRES_PASSWORD: inventory_pass
+        ports:
+            - "5433:5432"
+        volumes:
+            - db_data:/var/lib/postgresql/data
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U inventory_user -d inventory_db"]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+
+volumes:
+    db_data:

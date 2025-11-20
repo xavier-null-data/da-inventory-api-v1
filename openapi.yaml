@@ -1,0 +1,319 @@
+openapi: 3.0.3
+info:
+  title: Inventory API
+  version: 1.0.0
+paths:
+  /api/products:
+    get:
+      summary: Listar productos
+      parameters:
+        - in: query
+          name: category
+          schema:
+            type: string
+        - in: query
+          name: min_price
+          schema:
+            type: number
+        - in: query
+          name: max_price
+          schema:
+            type: number
+      responses:
+        '200':
+          description: Lista de productos
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Product'
+                      meta:
+                        $ref: '#/components/schemas/PaginationMeta'
+    post:
+      summary: Crear producto
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInput'
+      responses:
+        '201':
+          description: Producto creado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccess'
+  /api/products/{id}:
+    get:
+      summary: Obtener detalle de producto
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Detalle del producto
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Product'
+        '404':
+          description: Producto no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    put:
+      summary: Actualizar producto
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductInput'
+      responses:
+        '200':
+          description: Producto actualizado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccess'
+        '404':
+          description: Producto no encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+    delete:
+      summary: Eliminar producto
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Producto eliminado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccess'
+  /api/stores/{id}/inventory:
+    get:
+      summary: Listar inventario por tienda
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Inventario de la tienda
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Inventory'
+  /api/inventory/transfer:
+    post:
+      summary: Transferir inventario entre tiendas
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferRequest'
+      responses:
+        '200':
+          description: Transferencia exitosa
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiSuccess'
+        '400':
+          description: Error de negocio en la transferencia
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '422':
+          description: Datos inválidos en la transferencia
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /api/inventory/alerts:
+    get:
+      summary: Listar productos con stock bajo
+      parameters:
+        - in: query
+          name: storeId
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de alertas
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiSuccess'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Inventory'
+components:
+  schemas:
+    ApiSuccess:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: Operación realizada correctamente
+        data:
+          nullable: true
+        meta:
+          type: object
+          nullable: true
+    ApiError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Algo salió mal
+        error_code:
+          type: string
+          example: SOME_ERROR_CODE
+        errors:
+          type: object
+          nullable: true
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+        per_page:
+          type: integer
+        total:
+          type: integer
+        total_pages:
+          type: integer
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        category:
+          type: string
+        price:
+          type: number
+        sku:
+          type: string
+    ProductInput:
+      type: object
+      required:
+        - name
+        - category
+        - price
+        - sku
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        category:
+          type: string
+        price:
+          type: number
+        sku:
+          type: string
+    Inventory:
+      type: object
+      properties:
+        id:
+          type: string
+        productId:
+          type: string
+        storeId:
+          type: string
+        quantity:
+          type: integer
+        minStock:
+          type: integer
+    Movement:
+      type: object
+      properties:
+        id:
+          type: string
+        productId:
+          type: string
+        sourceStoreId:
+          type: string
+        targetStoreId:
+          type: string
+        quantity:
+          type: integer
+        timestamp:
+          type: string
+          format: date-time
+        type:
+          type: string
+          enum: [IN, OUT, TRANSFER]
+    TransferRequest:
+      type: object
+      required:
+        - productId
+        - sourceStoreId
+        - targetStoreId
+        - quantity
+      properties:
+        productId:
+          type: string
+        sourceStoreId:
+          type: string
+        targetStoreId:
+          type: string
+        quantity:
+          type: integer
